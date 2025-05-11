@@ -3,7 +3,7 @@ import LoginForm from "../components/LoginForm";
 import SignUpForm from "../components/SignUpForm";
 import Header2 from "../components/Header2";
 
-const AuthPage = () => {
+const Authpage = () => {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
@@ -76,4 +76,4 @@ const AuthPage = () => {
   );
 };
 
-export default AuthPage;
+export default Authpage;
