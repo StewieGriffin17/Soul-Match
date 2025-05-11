@@ -1,21 +1,22 @@
 import { create } from "zustand";
-import { axiosInstance } from "../lib/axios";
-import toast from "react-hot-toast";
-import { useAuthStore } from "./useAuthStore";
+import axios from "axios";
 
 export const useUserStore = create((set) => ({
-  loading: false,
-
-  updateProfile: async (data) => {
-    try {
-      set({ loading: true });
-      const res = await axiosInstance.put("/users/update", data);
-      useAuthStore.getState().setAuthUser(res.data.user);
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
-    } finally {
-      set({ loading: false });
-    }
-  },
+	loading: false,
+	updateProfile: async (formData) => {
+		set({ loading: true });
+		try {
+			await axios.put("/api/profile", formData, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			});
+			alert("Profile updated!");
+		} catch (error) {
+			console.error("Error updating profile:", error);
+			alert("Failed to update profile.");
+		} finally {
+			set({ loading: false });
+		}
+	},
 }));

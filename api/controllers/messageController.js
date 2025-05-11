@@ -1,5 +1,5 @@
 import Message from "../models/Message.js";
-// import { getConnectedUsers, getIO } from "../socket/socket.server.js";
+import { getConnectedUsers, getIO } from "../socket/socket.server.js";
 
 export const sendMessage = async (req, res) => {
 	try {

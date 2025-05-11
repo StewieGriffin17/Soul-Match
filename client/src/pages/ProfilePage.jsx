@@ -10,7 +10,7 @@ const ProfilePage = () => {
 	const [age, setAge] = useState(authUser.age || "");
 	const [gender, setGender] = useState(authUser.gender || "");
 	const [genderPreference, setGenderPreference] = useState(authUser.genderPreference || []);
-	const [image, setImage] = useState(authUser.image || null);
+	const [previewImage, setPreviewImage] = useState(authUser.image || null);
 
 	const fileInputRef = useRef(null);
 
@@ -18,7 +18,19 @@ const ProfilePage = () => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		updateProfile({ name, bio, age, gender, genderPreference, image });
+
+		const formData = new FormData();
+		formData.append("name", name);
+		formData.append("bio", bio);
+		formData.append("age", age);
+		formData.append("gender", gender);
+		formData.append("genderPreference", JSON.stringify(genderPreference));
+
+		if (fileInputRef.current.files[0]) {
+			formData.append("image", fileInputRef.current.files[0]);
+		}
+
+		updateProfile(formData);
 	};
 
 	const handleImageChange = (e) => {
@@ -26,14 +38,19 @@ const ProfilePage = () => {
 		if (file) {
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				setImage(reader.result);
+				setPreviewImage(reader.result);
 			};
-
 			reader.readAsDataURL(file);
 		}
 	};
 
-	console.log(image);
+	const handleGenderPrefChange = (option) => {
+		if (genderPreference.includes(option)) {
+			setGenderPreference(genderPreference.filter((g) => g !== option));
+		} else {
+			setGenderPreference([...genderPreference, option]);
+		}
+	};
 
 	return (
 		<div className='min-h-screen bg-gray-50 flex flex-col'>
@@ -52,19 +69,15 @@ const ProfilePage = () => {
 								<label htmlFor='name' className='block text-sm font-medium text-gray-700'>
 									Name
 								</label>
-								<div className='mt-1'>
-									<input
-										id='name'
-										name='name'
-										type='text'
-										required
-										value={name}
-										onChange={(e) => setName(e.target.value)}
-										className='appearance-none block w-full px-3 py-2 border border-gray-300
-										 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 
-										sm:text-sm'
-									/>
-								</div>
+								<input
+									id='name'
+									name='name'
+									type='text'
+									required
+									value={name}
+									onChange={(e) => setName(e.target.value)}
+									className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 sm:text-sm focus:ring-pink-500 focus:border-pink-500'
+								/>
 							</div>
 
 							{/* AGE */}
@@ -72,17 +85,15 @@ const ProfilePage = () => {
 								<label htmlFor='age' className='block text-sm font-medium text-gray-700'>
 									Age
 								</label>
-								<div className='mt-1'>
-									<input
-										id='age'
-										name='age'
-										type='number'
-										required
-										value={age}
-										onChange={(e) => setAge(e.target.value)}
-										className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm'
-									/>
-								</div>
+								<input
+									id='age'
+									name='age'
+									type='number'
+									required
+									value={age}
+									onChange={(e) => setAge(e.target.value)}
+									className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 sm:text-sm focus:ring-pink-500 focus:border-pink-500'
+								/>
 							</div>
 
 							{/* GENDER */}
@@ -93,11 +104,11 @@ const ProfilePage = () => {
 										<label key={option} className='inline-flex items-center'>
 											<input
 												type='radio'
-												className='form-radio text-pink-600'
 												name='gender'
 												value={option.toLowerCase()}
 												checked={gender === option.toLowerCase()}
 												onChange={() => setGender(option.toLowerCase())}
+												className='form-radio text-pink-600'
 											/>
 											<span className='ml-2'>{option}</span>
 										</label>
@@ -114,8 +125,8 @@ const ProfilePage = () => {
 											<input
 												type='checkbox'
 												className='form-checkbox text-pink-600'
-												checked={genderPreference.toLowerCase() === option.toLowerCase()}
-												onChange={() => setGenderPreference(option.toLowerCase())}
+												checked={genderPreference.includes(option.toLowerCase())}
+												onChange={() => handleGenderPrefChange(option.toLowerCase())}
 											/>
 											<span className='ml-2'>{option}</span>
 										</label>
@@ -124,30 +135,28 @@ const ProfilePage = () => {
 							</div>
 
 							{/* BIO */}
-
 							<div>
 								<label htmlFor='bio' className='block text-sm font-medium text-gray-700'>
 									Bio
 								</label>
-								<div className='mt-1'>
-									<textarea
-										id='bio'
-										name='bio'
-										rows={3}
-										value={bio}
-										onChange={(e) => setBio(e.target.value)}
-										className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm'
-									/>
-								</div>
+								<textarea
+									id='bio'
+									name='bio'
+									rows={3}
+									value={bio}
+									onChange={(e) => setBio(e.target.value)}
+									className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 sm:text-sm focus:ring-pink-500 focus:border-pink-500'
+								/>
 							</div>
 
+							{/* IMAGE UPLOAD */}
 							<div>
-								<label className='block text-sm font-medium text-gray-700'>Cover Image</label>
+								<label className='block text-sm font-medium text-gray-700'>Profile Image</label>
 								<div className='mt-1 flex items-center'>
 									<button
 										type='button'
 										onClick={() => fileInputRef.current.click()}
-										className='inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500'
+										className='inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-pink-500 focus:outline-none'
 									>
 										Upload Image
 									</button>
@@ -161,16 +170,16 @@ const ProfilePage = () => {
 								</div>
 							</div>
 
-							{image && (
+							{previewImage && (
 								<div className='mt-4'>
-									<img src={image} alt='User Image' className='w-48 h-full object-cover rounded-md' />
+									<img src={previewImage} alt='User Preview' className='w-48 h-auto object-cover rounded-md' />
 								</div>
 							)}
 
+							{/* SUBMIT */}
 							<button
 								type='submit'
-								className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 
-								focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500'
+								className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:ring-2 focus:ring-offset-2 focus:ring-pink-500'
 								disabled={loading}
 							>
 								{loading ? "Saving..." : "Save"}
@@ -182,4 +191,5 @@ const ProfilePage = () => {
 		</div>
 	);
 };
+
 export default ProfilePage;
