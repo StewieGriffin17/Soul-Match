@@ -2,28 +2,14 @@ import cloudinary from "../config/cloudinary.js";
 import User from "../models/User.js";
 
 export const updateProfile = async (req, res) => {
-	// image => cloudinary -> image.cloudinary.your => mongodb
-
 	try {
-		const { image, ...otherData } = req.body;
+		const { name, bio, age, gender, genderPreference } = req.body;
+		const updatedData = { name, bio, age, gender, genderPreference };
 
-		let updatedData = otherData;
-
-		if (image) {
-			// base64 format
-			if (image.startsWith("data:image")) {
-				try {
-					const uploadResponse = await cloudinary.uploader.upload(image);
-					updatedData.image = uploadResponse.secure_url;
-				} catch (error) {
-					console.error("Error uploading image:", uploadError);
-
-					return res.status(400).json({
-						success: false,
-						message: "Error uploading image",
-					});
-				}
-			}
+		if (req.file) {
+			const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+			const uploadResponse = await cloudinary.uploader.upload(base64Image);
+			updatedData.image = uploadResponse.secure_url;
 		}
 
 		const updatedUser = await User.findByIdAndUpdate(req.user.id, updatedData, { new: true });
